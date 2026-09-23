@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "pnl_analyzer/backend/app.py" }
+  ],
+  "outputDirectory": "pnl_analyzer"
+}

@@ -4,7 +4,7 @@ Flask API - Clean separation: routes call calculation engine.
 import sys
 from pathlib import Path as _Path
 # Ensure backend dir is on sys.path so `from calculations import *` works
-# both when run as `python app.py` and when Vercel loads `pnl-analyzer.backend.app:app`
+# both when run as `python app.py` and when Vercel loads `pnl_analyzer.backend.app:app` or `backend.app:app`
 sys.path.insert(0, str(_Path(__file__).parent))
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -21,7 +21,7 @@ try:
     load_dotenv()
 except: pass
 # Mongo optional (keep SQLite) — lazy init, never breaks if Mongo down
-# Handle both direct execution and Vercel package import (pnl-analyzer.backend.app)
+# Handle both direct execution and Vercel package import (pnl_analyzer.backend.app / backend.app)
 try:
     from mongo_models import get_mongo_db, init_mongo_db, is_mongo_available, mongo_id_str, MONGO_URI as MONGO_URI_MONGO
     HAS_MONGO = True
