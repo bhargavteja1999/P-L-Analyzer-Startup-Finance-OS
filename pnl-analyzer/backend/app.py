@@ -1,10 +1,19 @@
 """
 Flask API - Clean separation: routes call calculation engine.
 """
+import sys
+from pathlib import Path as _Path
+# Ensure backend dir is on sys.path so `from calculations import *` works
+# both when run as `python app.py` and when Vercel loads `pnl-analyzer.backend.app:app`
+sys.path.insert(0, str(_Path(__file__).parent))
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from calculations import *
-from models import init_db, get_db
+try:
+    from calculations import *
+    from models import init_db, get_db
+except ImportError:
+    from .calculations import *
+    from .models import init_db, get_db
 import json
 import os
 try:
@@ -12,16 +21,22 @@ try:
     load_dotenv()
 except: pass
 # Mongo optional (keep SQLite) — lazy init, never breaks if Mongo down
+# Handle both direct execution and Vercel package import (pnl-analyzer.backend.app)
 try:
     from mongo_models import get_mongo_db, init_mongo_db, is_mongo_available, mongo_id_str, MONGO_URI as MONGO_URI_MONGO
     HAS_MONGO = True
     MONGO_URI = MONGO_URI_MONGO
 except ImportError:
-    HAS_MONGO = False
-    MONGO_URI = os.getenv("MONGO_URI","mongodb://localhost:27017")
-    def is_mongo_available(): return False
-    def get_mongo_db(): raise RuntimeError("mongo not available")
-    def init_mongo_db(): return False
+    try:
+        from .mongo_models import get_mongo_db, init_mongo_db, is_mongo_available, mongo_id_str, MONGO_URI as MONGO_URI_MONGO
+        HAS_MONGO = True
+        MONGO_URI = MONGO_URI_MONGO
+    except ImportError:
+        HAS_MONGO = False
+        MONGO_URI = os.getenv("MONGO_URI","mongodb://localhost:27017")
+        def is_mongo_available(): return False
+        def get_mongo_db(): raise RuntimeError("mongo not available")
+        def init_mongo_db(): return False
 
 app = Flask(__name__)
 CORS(app)
