@@ -40,7 +40,11 @@ except ImportError:
 
 app = Flask(__name__)
 CORS(app)
-init_db()
+# init DB resiliently — on Vercel read-only FS, fallback to /tmp (see models.py DB_PATH)
+try:
+    init_db()
+except Exception as e:
+    print("SQLite init skipped (Vercel read-only fallback):", e)
 # try init mongo in background — don't fail if offline (mongomock fallback ensures same data as SQLite even without real Mongo)
 try:
     if HAS_MONGO:

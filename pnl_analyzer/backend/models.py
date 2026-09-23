@@ -4,9 +4,26 @@ Tables: businesses, months, revenue, cogs, expenses
 """
 import sqlite3
 import json
+import os
+import shutil
+import tempfile
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "pnl.db"
+# Vercel serverless functions have read-only filesystem except /tmp.
+# Use writable temp dir on Vercel, otherwise use repo-local pnl.db
+_REPO_DB_PATH = Path(__file__).parent / "pnl.db"
+# On Linux (Vercel) /tmp exists; on Windows tempfile.gettempdir() is needed for local simulation
+_TMP_DIR = Path(tempfile.gettempdir()) if os.getenv("VERCEL") and not Path("/tmp").exists() else Path("/tmp")
+_VERCEL_DB_PATH = _TMP_DIR / "pnl.db"
+DB_PATH = _VERCEL_DB_PATH if os.getenv("VERCEL") else _REPO_DB_PATH
+
+# Ensure /tmp DB exists on Vercel by copying seeded DB if needed
+if os.getenv("VERCEL") and not _VERCEL_DB_PATH.exists() and _REPO_DB_PATH.exists():
+    try:
+        _VERCEL_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(_REPO_DB_PATH, _VERCEL_DB_PATH)
+    except Exception:
+        pass
 
 SCHEMA = """
 PRAGMA journal_mode=WAL;
@@ -70,9 +87,21 @@ CREATE TABLE IF NOT EXISTS audit_log (
 """
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    # On Vercel, ensure DB file is in /tmp and handle read-only fallback
+    db_path = DB_PATH
+    try:
+        conn = sqlite3.connect(str(db_path), timeout=30, check_same_thread=False)
+        conn.row_factory = sqlite3.Row
+        return conn
+    except Exception as e:
+        # Fallback to in-memory DB if filesystem is read-only and /tmp also fails
+        # This prevents FUNCTION_INVOCATION_FAILED on cold start
+        try:
+            conn = sqlite3.connect(":memory:", timeout=30, check_same_thread=False)
+            conn.row_factory = sqlite3.Row
+            return conn
+        except Exception:
+            raise e
 
 def init_db():
     conn = get_db()
