@@ -1,0 +1,413 @@
+{
+    "total_transactions": 1200,
+    "date_min": "2024-01-01",
+    "date_max": "2026-06-29",
+    "total_revenue": 14494612.580000002,
+    "total_expense": 8196398.0,
+    "total_cogs": 6095811.52,
+    "total_marketing": 1440148.54,
+    "total_shipping": 122062.37999999999,
+    "total_operating": 538375.56,
+    "total_net_profit": 3274064.42,
+    "overall_profit_margin_pct": 22.59,
+    "avg_order_value": 12078.84,
+    "median_order_value": 5675.68,
+    "avg_profit_per_order": 2728.39,
+    "total_units_sold": 12321,
+    "category_summary": [
+        {
+            "Product_Category": "Services",
+            "Revenue": 5639759.5,
+            "Total_Expense": 2756692.11,
+            "Net_Profit": 1607200.92,
+            "Units_Sold": 2246,
+            "Profit_Margin_Pct": 28.5
+        },
+        {
+            "Product_Category": "Hardware",
+            "Revenue": 3136616.29,
+            "Total_Expense": 2449218.46,
+            "Net_Profit": 183816.85,
+            "Units_Sold": 2676,
+            "Profit_Margin_Pct": 5.86
+        },
+        {
+            "Product_Category": "Software",
+            "Revenue": 3069324.7199999997,
+            "Total_Expense": 1080477.81,
+            "Net_Profit": 1207637.58,
+            "Units_Sold": 2366,
+            "Profit_Margin_Pct": 39.35
+        },
+        {
+            "Product_Category": "Electronics",
+            "Revenue": 1557599.64,
+            "Total_Expense": 1169313.46,
+            "Net_Profit": 126138.68000000001,
+            "Units_Sold": 2381,
+            "Profit_Margin_Pct": 8.1
+        },
+        {
+            "Product_Category": "Office Supplies",
+            "Revenue": 1091312.43,
+            "Total_Expense": 740696.16,
+            "Net_Profit": 149270.39,
+            "Units_Sold": 2652,
+            "Profit_Margin_Pct": 13.68
+        }
+    ],
+    "region_summary": [
+        {
+            "Region": "West",
+            "Revenue": 5681017.04,
+            "Total_Expense": 3186738.65,
+            "Net_Profit": 1314557.2,
+            "Transaction_Count": 474,
+            "Profit_Margin_Pct": 23.14
+        },
+        {
+            "Region": "East",
+            "Revenue": 4683526.84,
+            "Total_Expense": 2640040.19,
+            "Net_Profit": 1055077.21,
+            "Transaction_Count": 361,
+            "Profit_Margin_Pct": 22.53
+        },
+        {
+            "Region": "South",
+            "Revenue": 2679243.33,
+            "Total_Expense": 1520805.41,
+            "Net_Profit": 597611.16,
+            "Transaction_Count": 228,
+            "Profit_Margin_Pct": 22.31
+        },
+        {
+            "Region": "Midwest",
+            "Revenue": 1450825.37,
+            "Total_Expense": 848813.75,
+            "Net_Profit": 306818.85,
+            "Transaction_Count": 137,
+            "Profit_Margin_Pct": 21.15
+        }
+    ],
+    "segment_summary": [
+        {
+            "Customer_Segment": "Consumer",
+            "Revenue": 888101.0,
+            "Net_Profit": 191818.75,
+            "Units_Sold": 711
+        },
+        {
+            "Customer_Segment": "Enterprise",
+            "Revenue": 7814910.01,
+            "Net_Profit": 1724883.27,
+            "Units_Sold": 6833
+        },
+        {
+            "Customer_Segment": "Government",
+            "Revenue": 3369323.85,
+            "Net_Profit": 797598.14,
+            "Units_Sold": 2785
+        },
+        {
+            "Customer_Segment": "SMB",
+            "Revenue": 2422277.72,
+            "Net_Profit": 559764.26,
+            "Units_Sold": 1992
+        }
+    ],
+    "monthly_summary": [
+        {
+            "Year_Month": "2024-01",
+            "Revenue": 400258.08,
+            "Total_Expense": 240390.31,
+            "Net_Profit": 79935.76,
+            "MoM_Revenue_Growth_%": 0.0
+        },
+        {
+            "Year_Month": "2024-02",
+            "Revenue": 320364.23,
+            "Total_Expense": 189517.79,
+            "Net_Profit": 64362.97,
+            "MoM_Revenue_Growth_%": -19.96
+        },
+        {
+            "Year_Month": "2024-03",
+            "Revenue": 395748.23,
+            "Total_Expense": 243171.61,
+            "Net_Profit": 76124.28,
+            "MoM_Revenue_Growth_%": 23.53
+        },
+        {
+            "Year_Month": "2024-04",
+            "Revenue": 375338.65,
+            "Total_Expense": 218789.22,
+            "Net_Profit": 80694.23,
+            "MoM_Revenue_Growth_%": -5.16
+        },
+        {
+            "Year_Month": "2024-05",
+            "Revenue": 566494.13,
+            "Total_Expense": 348494.08999999997,
+            "Net_Profit": 106879.7,
+            "MoM_Revenue_Growth_%": 50.93
+        },
+        {
+            "Year_Month": "2024-06",
+            "Revenue": 819378.62,
+            "Total_Expense": 439813.67,
+            "Net_Profit": 204665.45,
+            "MoM_Revenue_Growth_%": 44.64
+        },
+        {
+            "Year_Month": "2024-07",
+            "Revenue": 454517.47000000003,
+            "Total_Expense": 270215.47000000003,
+            "Net_Profit": 94045.38,
+            "MoM_Revenue_Growth_%": -44.529999999999994
+        },
+        {
+            "Year_Month": "2024-08",
+            "Revenue": 396273.53,
+            "Total_Expense": 208605.74,
+            "Net_Profit": 101221.54,
+            "MoM_Revenue_Growth_%": -12.809999999999999
+        },
+        {
+            "Year_Month": "2024-09",
+            "Revenue": 678039.52,
+            "Total_Expense": 364457.27,
+            "Net_Profit": 168962.87,
+            "MoM_Revenue_Growth_%": 71.1
+        },
+        {
+            "Year_Month": "2024-10",
+            "Revenue": 630432.65,
+            "Total_Expense": 374736.4,
+            "Net_Profit": 126841.92,
+            "MoM_Revenue_Growth_%": -7.02
+        },
+        {
+            "Year_Month": "2024-11",
+            "Revenue": 332526.54,
+            "Total_Expense": 214035.97,
+            "Net_Profit": 55005.79,
+            "MoM_Revenue_Growth_%": -47.25
+        },
+        {
+            "Year_Month": "2024-12",
+            "Revenue": 446456.94,
+            "Total_Expense": 236420.38,
+            "Net_Profit": 111229.0,
+            "MoM_Revenue_Growth_%": 34.260000000000005
+        },
+        {
+            "Year_Month": "2025-01",
+            "Revenue": 441482.13,
+            "Total_Expense": 247641.97,
+            "Net_Profit": 100901.57,
+            "MoM_Revenue_Growth_%": -1.11
+        },
+        {
+            "Year_Month": "2025-02",
+            "Revenue": 300704.59,
+            "Total_Expense": 170618.31,
+            "Net_Profit": 67849.56,
+            "MoM_Revenue_Growth_%": -31.89
+        },
+        {
+            "Year_Month": "2025-03",
+            "Revenue": 314039.22,
+            "Total_Expense": 214325.37,
+            "Net_Profit": 42279.85,
+            "MoM_Revenue_Growth_%": 4.43
+        },
+        {
+            "Year_Month": "2025-04",
+            "Revenue": 551576.63,
+            "Total_Expense": 281992.25,
+            "Net_Profit": 146843.33,
+            "MoM_Revenue_Growth_%": 75.64
+        },
+        {
+            "Year_Month": "2025-05",
+            "Revenue": 463059.52,
+            "Total_Expense": 221137.4,
+            "Net_Profit": 136708.99,
+            "MoM_Revenue_Growth_%": -16.05
+        },
+        {
+            "Year_Month": "2025-06",
+            "Revenue": 566498.34,
+            "Total_Expense": 323941.17,
+            "Net_Profit": 123497.94,
+            "MoM_Revenue_Growth_%": 22.34
+        },
+        {
+            "Year_Month": "2025-07",
+            "Revenue": 424649.27,
+            "Total_Expense": 233075.83,
+            "Net_Profit": 99696.98999999999,
+            "MoM_Revenue_Growth_%": -25.040000000000003
+        },
+        {
+            "Year_Month": "2025-08",
+            "Revenue": 748871.92,
+            "Total_Expense": 366577.19,
+            "Net_Profit": 215361.65,
+            "MoM_Revenue_Growth_%": 76.35
+        },
+        {
+            "Year_Month": "2025-09",
+            "Revenue": 548862.27,
+            "Total_Expense": 303447.94,
+            "Net_Profit": 126243.53,
+            "MoM_Revenue_Growth_%": -26.71
+        },
+        {
+            "Year_Month": "2025-10",
+            "Revenue": 523611.77,
+            "Total_Expense": 312130.87,
+            "Net_Profit": 104045.83,
+            "MoM_Revenue_Growth_%": -4.6
+        },
+        {
+            "Year_Month": "2025-11",
+            "Revenue": 325387.75,
+            "Total_Expense": 172149.34,
+            "Net_Profit": 84477.07,
+            "MoM_Revenue_Growth_%": -37.86
+        },
+        {
+            "Year_Month": "2025-12",
+            "Revenue": 438521.51,
+            "Total_Expense": 225608.11,
+            "Net_Profit": 115429.45999999999,
+            "MoM_Revenue_Growth_%": 34.77
+        },
+        {
+            "Year_Month": "2026-01",
+            "Revenue": 416087.14,
+            "Total_Expense": 249255.06,
+            "Net_Profit": 82271.9,
+            "MoM_Revenue_Growth_%": -5.12
+        },
+        {
+            "Year_Month": "2026-02",
+            "Revenue": 771110.96,
+            "Total_Expense": 443747.41000000003,
+            "Net_Profit": 170689.97,
+            "MoM_Revenue_Growth_%": 85.32
+        },
+        {
+            "Year_Month": "2026-03",
+            "Revenue": 376134.48,
+            "Total_Expense": 206357.16999999998,
+            "Net_Profit": 88406.45999999999,
+            "MoM_Revenue_Growth_%": -51.22
+        },
+        {
+            "Year_Month": "2026-04",
+            "Revenue": 686011.27,
+            "Total_Expense": 411555.15,
+            "Net_Profit": 137730.94,
+            "MoM_Revenue_Growth_%": 82.38
+        },
+        {
+            "Year_Month": "2026-05",
+            "Revenue": 310002.20999999996,
+            "Total_Expense": 163123.08,
+            "Net_Profit": 79940.36,
+            "MoM_Revenue_Growth_%": -54.81
+        },
+        {
+            "Year_Month": "2026-06",
+            "Revenue": 472173.01,
+            "Total_Expense": 301066.46,
+            "Net_Profit": 81720.13,
+            "MoM_Revenue_Growth_%": 52.31
+        }
+    ],
+    "correlation_matrix": {
+        "Revenue": {
+            "Revenue": 1.0,
+            "COGS": 0.894,
+            "Marketing_Expense": 0.956,
+            "Shipping_Expense": 0.524,
+            "Operating_Expense": 0.976,
+            "Total_Expense": 0.935,
+            "Net_Profit": 0.857,
+            "Units_Sold": 0.598
+        },
+        "COGS": {
+            "Revenue": 0.894,
+            "COGS": 1.0,
+            "Marketing_Expense": 0.851,
+            "Shipping_Expense": 0.519,
+            "Operating_Expense": 0.888,
+            "Total_Expense": 0.993,
+            "Net_Profit": 0.539,
+            "Units_Sold": 0.571
+        },
+        "Marketing_Expense": {
+            "Revenue": 0.956,
+            "COGS": 0.851,
+            "Marketing_Expense": 1.0,
+            "Shipping_Expense": 0.507,
+            "Operating_Expense": 0.937,
+            "Total_Expense": 0.907,
+            "Net_Profit": 0.8,
+            "Units_Sold": 0.581
+        },
+        "Shipping_Expense": {
+            "Revenue": 0.524,
+            "COGS": 0.519,
+            "Marketing_Expense": 0.507,
+            "Shipping_Expense": 1.0,
+            "Operating_Expense": 0.515,
+            "Total_Expense": 0.538,
+            "Net_Profit": 0.379,
+            "Units_Sold": 0.909
+        },
+        "Operating_Expense": {
+            "Revenue": 0.976,
+            "COGS": 0.888,
+            "Marketing_Expense": 0.937,
+            "Shipping_Expense": 0.515,
+            "Operating_Expense": 1.0,
+            "Total_Expense": 0.928,
+            "Net_Profit": 0.815,
+            "Units_Sold": 0.582
+        },
+        "Total_Expense": {
+            "Revenue": 0.935,
+            "COGS": 0.993,
+            "Marketing_Expense": 0.907,
+            "Shipping_Expense": 0.538,
+            "Operating_Expense": 0.928,
+            "Total_Expense": 1.0,
+            "Net_Profit": 0.62,
+            "Units_Sold": 0.596
+        },
+        "Net_Profit": {
+            "Revenue": 0.857,
+            "COGS": 0.539,
+            "Marketing_Expense": 0.8,
+            "Shipping_Expense": 0.379,
+            "Operating_Expense": 0.815,
+            "Total_Expense": 0.62,
+            "Net_Profit": 1.0,
+            "Units_Sold": 0.461
+        },
+        "Units_Sold": {
+            "Revenue": 0.598,
+            "COGS": 0.571,
+            "Marketing_Expense": 0.581,
+            "Shipping_Expense": 0.909,
+            "Operating_Expense": 0.582,
+            "Total_Expense": 0.596,
+            "Net_Profit": 0.461,
+            "Units_Sold": 1.0
+        }
+    }
+}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P&L Analyzer — SaaS Financial Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234f46e5'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='white' font-family='Inter,Arial,sans-serif' font-weight='800'%3E%E2%82%B9%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">₹</div><div><h2>P&L Analyzer</h2><p>Startup Finance OS <span style="background:#4f46e5;padding:2px 6px;border-radius:6px;font-size:10px;margin-left:4px">v2.0</span></p></div></div>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="active" data-page="dashboard" data-tooltip="Finance Command Center — KPIs, charts, health" tabindex="0" aria-label="Dashboard"><span class="icon" aria-hidden="true">▦</span> Dashboard</a>
+    <a data-page="revenue" data-tooltip="Revenue Management — add and track income sources" tabindex="0" aria-label="Revenue"><span class="icon" aria-hidden="true">💰</span> Revenue</a>
+    <a data-page="cogs" data-tooltip="COGS — direct costs to deliver product/service" tabindex="0" aria-label="COGS"><span class="icon" aria-hidden="true">📦</span> COGS</a>
+    <a data-page="expenses" data-tooltip="Operating Expenses — salaries, marketing, software, etc." tabindex="0" aria-label="Expenses"><span class="icon" aria-hidden="true">💸</span> Expenses</a>
+    <a data-page="pnl" data-tooltip="P&L Statement — professional profit & loss table" tabindex="0" aria-label="P&L Statement"><span class="icon" aria-hidden="true">📊</span> P&L Statement</a>
+    <a data-page="forecast" data-tooltip="Forecast — 12-month revenue & profit projection" tabindex="0" aria-label="Forecast"><span class="icon" aria-hidden="true">📈</span> Forecast</a>
+    <a data-page="breakeven" data-tooltip="Break-Even — fixed vs variable costs analysis" tabindex="0" aria-label="Break-even"><span class="icon" aria-hidden="true">⚖️</span> Break-even</a>
+    <a data-page="simulator" data-tooltip="What-If Simulator — test scenarios without changing real data" tabindex="0" aria-label="Simulator"><span class="icon" aria-hidden="true">🧪</span> What-If Simulator</a>
+    <a data-page="reports" data-tooltip="Yearly Report — annual & FY summaries" tabindex="0" aria-label="Yearly Report"><span class="icon" aria-hidden="true">📑</span> Yearly Report</a>
+    <a data-page="settings" data-tooltip="Settings — data source, business, database" tabindex="0" aria-label="Settings"><span class="icon" aria-hidden="true">⚙️</span> Settings</a>
+  </nav>
+  <div style="padding:12px;border-top:1px solid #1e293b">
+    <select id="businessSelect" style="width:100%;padding:8px;border-radius:8px;background:#1e293b;color:white;border:1px solid #334155" data-tooltip="Switch business — data isolated per business" aria-label="Business select"></select>
+    <button id="addBusinessBtn" class="btn btn-ghost" style="width:100%;margin-top:6px;padding:6px;font-size:11px;background:#1e293b;color:#a5b4fc;border-color:#334155" data-tooltip="Create new business — 12 months auto-created" aria-label="Add business">+ New Business</button>
+    <button id="removeBusinessBtn" class="btn btn-ghost" style="width:100%;margin-top:6px;padding:6px;font-size:11px;background:#1e293b;color:#f87171;border-color:#334155" data-tooltip="Remove selected business — deletes all its months & data (cannot undo)" aria-label="Remove business">🗑 Remove Business</button>
+    <select id="userSelect" style="width:100%;padding:6px;border-radius:8px;background:#1e293b;color:#94a3b8;border:1px solid #334155;margin-top:6px;font-size:11px" data-tooltip="Switch user role — Admin / Finance Manager / Analyst / Viewer" aria-label="User select"></select>
+  </div>
+  <div style="padding:16px;margin-top:auto;border-top:1px solid #1e293b">
+    <div style="font-size:12px;color:#94a3b8">Business</div><div id="bizName" style="font-weight:700" data-tooltip="Business display name — edit in Settings" tabindex="0">AI SaaS Startup</div>
+    <button id="loadDemo" class="btn btn-primary" style="width:100%;margin-top:10px" data-tooltip="Load demo data — AI SaaS Startup 12 months, resets local data" aria-label="Load demo">Load Demo Data</button>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button id="mobileToggle" class="btn btn-ghost mobile-toggle">☰</button>
+    <div id="topBusinessName" style="font-weight:700" data-tooltip="Current business — switch via sidebar" tabindex="0">AI SaaS Startup</div>
+    <span id="fyBadge" style="background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700" tabindex="0" role="status" aria-label="FY summary"></span>
+    <div style="flex:1"></div>
+    <label style="font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px" data-tooltip="Toggle 18% GST on display values" tabindex="0"><input type="checkbox" id="gstToggle" aria-label="GST toggle"> GST 18%</label>
+    <select id="monthSelect" style="max-width:160px" data-tooltip="Select month — Jan to Dec 2026" aria-label="Month select"></select>
+    <label style="font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px"><input type="file" id="csvFile" accept=".csv" style="display:none"><button class="btn btn-ghost" onclick="document.getElementById('csvFile').click()" style="padding:6px 10px;font-size:11px" data-tooltip="Import financial data from CSV file" aria-label="Import CSV">📤 Import CSV</button></label>
+    <button id="fmtToggle" class="btn btn-ghost" style="padding:6px 10px;font-size:11px" data-tooltip="Toggle Full (₹1,00,000) vs Lakh (₹1.00 L) display" aria-label="Toggle display">₹ Lakh</button>
+    <button id="exportCsv" class="btn btn-ghost" data-tooltip="Download P&L statement as CSV for Excel/Sheets" aria-label="Export CSV">⬇ Export CSV</button>
+    <button id="exportPdf" class="btn btn-primary" data-tooltip="Download professional P&L statement as PDF" aria-label="Export PDF">📄 Export PDF</button>
+  </div>
+  <div class="content">
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <h2 style="margin-bottom:12px">Dashboard — <span id="dashMonthLabel"></span></h2>
+      <div id="kpis" class="kpis"></div>
+      <div class="grid2">
+        <div class="card"><h3>Revenue vs Expenses</h3><div class="chart-wrap"><canvas id="chartRevExp"></canvas></div></div>
+        <div class="card"><h3>Profit Trend (12 months)</h3><div class="chart-wrap"><canvas id="chartProfitTrend"></canvas></div></div>
+      </div>
+      <div class="grid2" style="margin-top:16px">
+        <div class="card"><h3>Expense Breakdown</h3><div class="chart-wrap"><canvas id="chartExpenseDonut"></canvas></div></div>
+        <div class="card"><h3>Gross & Net Margin Trend</h3><div class="chart-wrap"><canvas id="chartMargins"></canvas></div></div>
+      </div>
+      <div class="card" style="margin-top:16px"><h3>Business Health <span style="font-weight:400;color:#64748b;font-size:12px">— estimates based on entered data</span></h3><div id="healthGrid" class="health" style="margin-top:12px"></div></div>
+      <div class="card" style="margin-top:16px"><h3>Yearly Summary 2026 <span id="fyLabel" style="font-weight:400;font-size:11px;color:#64748b"></span></h3><div id="yearlyCards" class="kpis" style="margin-top:12px"></div><div style="display:flex;gap:8px;margin-top:8px"><button id="exportAnnualCsv" class="btn btn-ghost">Export Annual CSV</button><button id="exportFyCsv" class="btn btn-ghost">Export FY Apr-Mar</button><span id="anomalyAlert" style="font-size:11px;color:#ef4444;display:none"></span></div><div id="maLine" style="font-size:11px;color:#64748b;margin-top:6px"></div></div>
+    </div>
+    <!-- REVENUE -->
+    <div id="page-revenue" class="page">
+      <h2>Revenue Management</h2><p style="color:#64748b">Add multiple revenue sources. Total updates automatically.</p>
+      <div class="card" style="margin-top:12px">
+        <div class="form">
+          <div><label>Revenue Source</label><input id="revenueSource" placeholder="Subscription Revenue"></div>
+          <div><label>Amount (₹)</label><div style="display:flex;gap:6px;align-items:center"><input id="revenueAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="10000" style="flex:1"><button type="button" class="btn btn-ghost" id="revenue1L" style="padding:6px 10px;font-size:12px;white-space:nowrap" data-tooltip="Fill 1 Lakh (₹1,00,000)" aria-label="Fill 1L">1L</button><button type="button" class="btn btn-ghost" id="revenue1Cr" style="padding:6px 10px;font-size:12px;white-space:nowrap" data-tooltip="Fill 1 Crore (₹1,00,00,000)" aria-label="Fill 1Cr">1Cr</button></div></div>
+          <div><button id="addRevenue" class="btn btn-primary" data-tooltip="Add revenue source — validates source required and amount >=0" aria-label="Add Revenue">+ Add Revenue</button></div>
+        </div>
+        <div id="revenueError" style="color:#ef4444;font-size:12px"></div>
+        <table class="table" style="margin-top:12px"><thead><tr><th>Source</th><th>Amount</th><th></th></tr></thead><tbody id="revenueList"></tbody><tfoot><tr class="pl-total"><td>Total Revenue</td><td id="totalRevenue">₹0.00</td><td></td></tr></tfoot></table>
+      </div>
+    </div>
+    <!-- COGS -->
+    <div id="page-cogs" class="page">
+      <h2>COGS Management</h2><p style="color:#64748b">Direct costs to deliver product/service. Calculates Gross Profit & Margin.</p>
+      <div class="card" style="margin-top:12px">
+        <div class="form">
+          <div><label>COGS Source</label><input id="cogsSource" placeholder="Cloud Hosting"></div>
+          <div><label>Amount (₹)</label><input id="cogsAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="1000"></div>
+          <div><button id="addCOGS" class="btn btn-primary" data-tooltip="Add COGS — direct cost, affects Gross Profit & Margin" aria-label="Add COGS">+ Add COGS</button></div>
+        </div>
+        <div id="cogsError" style="color:#ef4444;font-size:12px"></div>
+        <table class="table" style="margin-top:12px"><thead><tr><th>Source</th><th>Amount</th><th></th></tr></thead><tbody id="cogsList"></tbody></table>
+        <div style="display:flex;gap:12px;margin-top:12px"><div class="card" style="flex:1"><div style="font-size:12px;color:#64748b">Total COGS</div><div id="cogsTotal" style="font-weight:800;font-size:18px">₹0</div></div><div class="card" style="flex:1"><div style="font-size:12px;color:#64748b">Gross Profit</div><div id="grossProfit" style="font-weight:800;font-size:18px;color:#10b981">₹0</div></div><div class="card" style="flex:1"><div style="font-size:12px;color:#64748b">Gross Margin</div><div id="grossMargin" style="font-weight:800;font-size:18px">0%</div></div></div>
+      </div>
+    </div>
+    <!-- EXPENSES -->
+    <div id="page-expenses" class="page">
+      <h2>Operating Expenses</h2><p style="color:#64748b">Salaries, marketing, software, rent, legal, etc.</p>
+      <div class="card" style="margin-top:12px">
+        <div class="form">
+          <div><label>Category</label><input id="opexSource" list="catList" placeholder="Marketing"><datalist id="catList"><option>Marketing</option><option>Salaries</option><option>Software</option><option>Rent</option><option>Legal</option><option>Accounting</option><option>Insurance</option><option>Travel</option></datalist></div>
+          <div><label>Amount (₹)</label><input id="opexAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="2000"></div>
+          <div><button id="addOPEX" class="btn btn-primary" data-tooltip="Add operating expense — salaries, marketing, software, etc. Handles category validation" aria-label="Add Expense">+ Add Expense</button></div>
+        </div>
+        <div id="opexError" style="color:#ef4444;font-size:12px"></div>
+        <table class="table" style="margin-top:12px"><thead><tr><th>Category</th><th>Amount</th><th></th></tr></thead><tbody id="opexList"></tbody><tfoot><tr class="pl-total"><td>Total OPEX</td><td id="opexTotal">₹0.00</td><td></td></tr></tfoot></table>
+      </div>
+    </div>
+    <!-- P&L -->
+    <div id="page-pnl" class="page">
+      <h2>P&L Statement</h2><p style="color:#64748b">Professional profit & loss table for the selected month.</p>
+      <div class="card" style="margin-top:12px;overflow:auto"><div id="pnlTable"></div></div>
+    </div>
+    <!-- FORECAST -->
+    <div id="page-forecast" class="page">
+      <h2>12-Month Forecast <span class="info-icon" tabindex="0" role="button" aria-label="About forecast" data-tooltip-html="<div class='tt-title'>Revenue Forecast</div><div>Projects next months using historical growth rate and current price. Forecast = Historical Trend → Future Estimate. Not a guarantee — shows range.</div>">ⓘ</span></h2>
+      <div class="card" style="margin-top:12px">
+        <div class="grid3">
+          <div><label>Starting Customers</label><input id="fcCustomers" type="number" value="1000" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px"></div>
+          <div><label>Monthly Growth %</label><input id="fcGrowth" type="number" value="10" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px"></div>
+          <div><label>Price / Customer (₹)</label><input id="fcPrice" type="text" inputmode="numeric" autocomplete="off" value="10" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px"></div>
+          <div><label>Expense Growth %</label><input id="fcExpGrowth" type="number" value="4" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px"></div>
+        </div>
+        <div class="chart-wrap" style="margin-top:16px"><canvas id="chartForecast"></canvas></div>
+        <div style="overflow:auto;margin-top:12px"><table class="table"><thead><tr><th>Month</th><th>Customers</th><th>Revenue</th><th>COGS</th><th>OPEX</th><th>Profit</th></tr></thead><tbody id="forecastBody"></tbody></table></div>
+      </div>
+    </div>
+    <!-- BREAK-EVEN -->
+    <div id="page-breakeven" class="page">
+      <h2>Break-Even Analysis <span class="info-icon" tabindex="0" role="button" aria-label="About break-even" data-tooltip-html="<div class='tt-title'>Break-Even Point</div><div>Revenue where profit = 0. BE = Fixed Costs / Contribution Margin %. Safety Margin = Current Revenue - BE Revenue.</div>">ⓘ</span></h2>
+      <div class="card" style="margin-top:12px">
+        <div class="grid3">
+          <div><label>Fixed Costs (₹)</label><input id="beFixed" type="text" inputmode="numeric" autocomplete="off" value="5000" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px"></div>
+          <div><label>Avg Revenue / Customer (₹)</label><input id="beRevPer" type="text" inputmode="numeric" autocomplete="off" value="10" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px"></div>
+          <div><label>Variable Cost / Customer (₹)</label><input id="beVar" type="text" inputmode="numeric" autocomplete="off" value="2" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px"></div>
+        </div>
+        <div id="beResult"></div>
+      </div>
+    </div>
+    <!-- SIMULATOR -->
+    <div id="page-simulator" class="page">
+      <h2>What-If Simulator <span class="info-icon" tabindex="0" role="button" aria-label="About simulator" data-tooltip-html="<div class='tt-title'>What-If Simulator</div><div>Temporary scenario — does NOT modify real data. Adjust sliders to see how revenue/expense changes affect profit, margin, break-even.</div>">ⓘ</span></h2><p style="color:#64748b">Change assumptions and see profit instantly. <span style="font-size:11px;background:#fef3c7;padding:2px 6px;border-radius:999px">Actual vs Simulated clearly separated below</span></p>
+      <div class="card" style="margin-top:12px">
+        <div class="grid2">
+          <div><label>Customers: <span id="simCustomersVal">1000</span> <span class="info-icon" tabindex="0" role="button" aria-label="Customers info" data-tooltip="Number of paying customers — simulated. Change to see revenue impact. Actual data stays unchanged.">ⓘ</span></label><input id="simCustomers" type="range" min="0" max="5000" value="1000" class="slider" aria-label="Customers"></div>
+          <div><label>Price: <span id="simPriceVal">₹10.00</span> <span class="info-icon" tabindex="0" role="button" aria-label="Price info" data-tooltip="Price per customer — simulated revenue = Customers × Price">ⓘ</span></label><input id="simPrice" type="range" min="1" max="100" value="10" class="slider" aria-label="Price"></div>
+          <div><label>Marketing (₹) <span class="info-icon" tabindex="0" role="button" aria-label="Marketing info" data-tooltip="Adjust to simulate how marketing spending affects profit. Temporary scenario.">ⓘ</span></label><input id="simMarketing" type="text" inputmode="numeric" autocomplete="off" value="2000" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px" data-tooltip="Simulated Marketing — does not modify real DB" aria-label="Marketing"></div>
+          <div><label>Salaries (₹) <span class="info-icon" tabindex="0" role="button" aria-label="Salaries info" data-tooltip="Simulated salaries — see impact on profit & break-even">ⓘ</span></label><input id="simSalaries" type="text" inputmode="numeric" autocomplete="off" value="2000" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px" data-tooltip="Simulated Salaries" aria-label="Salaries"></div>
+          <div><label>Cloud / COGS (₹) <span class="info-icon" tabindex="0" role="button" aria-label="Cloud info" data-tooltip="Simulated direct costs — affects gross profit">ⓘ</span></label><input id="simCloud" type="text" inputmode="numeric" autocomplete="off" value="1500" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px" data-tooltip="Simulated COGS" aria-label="Cloud COGS"></div>
+          <div><label>Other OPEX (₹) <span class="info-icon" tabindex="0" role="button" aria-label="Other info" data-tooltip="Simulated other operating expenses">ⓘ</span></label><input id="simOther" type="text" inputmode="numeric" autocomplete="off" value="1000" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px" data-tooltip="Simulated Other OPEX" aria-label="Other OPEX"></div>
+        </div>
+        <div id="simResult" style="margin-top:16px"></div>
+      </div>
+    </div>
+    <!-- REPORTS -->
+    <div id="page-reports" class="page">
+      <h2>Yearly Report 2026</h2>
+      <div class="card" style="margin-top:12px"><div id="yearlyCards2" class="kpis"></div><div id="fyCards" style="margin-top:12px"></div><div id="auditLog" style="margin-top:12px;font-size:12px"></div></div>
+    </div>
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <h2>Settings</h2>
+      <div class="card" style="margin-top:12px;max-width:600px">
+        <label>Business Name</label><input id="bizNameInput" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px;margin-top:6px">
+        <div style="margin-top:16px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc">
+          <label style="font-weight:700;font-size:13px">Data Source — SQL Database Calculation</label>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap">
+            <select id="dataSourceSelect" style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;min-width:260px">
+              <option value="local">Local (Browser localStorage)</option>
+              <option value="sql">SQL Database (SQLite via Flask API)</option>
+              <option value="mongo">MongoDB (Atlas / Local) via Flask API</option>
+            </select>
+            <span id="dataSourceStatus" style="font-size:12px;color:#64748b"></span>
+          </div>
+          <p style="font-size:12px;color:#64748b;margin-top:8px">• <b>Local</b>: fast demo, calculations in <code>frontend/js/app.js</code><br>• <b>SQL</b>: production — data in <code>backend/pnl.db</code> → API <code>/api/pnl, /dashboard</code> → <code>backend/calculations.py</code>. Requires Flask <code>:5000</code>.<br>• <b>MongoDB</b>: optional — data in MongoDB <code>pnl_analyzer</code> → API <code>/api/mongo/pnl, /mongo/dashboard</code> → same engine. Set <code>MONGO_URI</code> env (Atlas or local) then Flask on <code>:5000</code>. Keeps SQLite intact.</p>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button id="syncToSql" class="btn btn-primary" data-tooltip="Sync local financial data with the SQL database (clears duplicates)" aria-label="Sync to SQL">Sync Local → SQL</button>
+            <button id="syncToMongo" class="btn btn-ghost" style="border-color:#10b981;color:#065f46" data-tooltip="Sync local to MongoDB (requires MONGO_URI)" aria-label="Sync to Mongo">Sync Local → Mongo</button>
+            <button id="resetData" class="btn btn-danger" data-tooltip="Reset current month — deletes revenue/COGS/expenses for selected month" aria-label="Reset data">Reset Current Month</button>
+            <button id="testSqlBtn" class="btn btn-ghost" data-tooltip="Refresh data — test Flask connection on port 5000" aria-label="Test connection">↻ Test Connection</button>
+          </div>
+          <div id="sqlTestResult" style="margin-top:10px;padding:10px;background:white;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;display:none;white-space:pre-wrap;max-height:200px;overflow:auto"></div>
+        </div>
+        <div style="margin-top:12px;padding:12px;background:#0f172a;color:#e2e8f0;border-radius:10px">
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px">How to add SQL calculation to any feature — FIXED:</div>
+          <code id="sqlCodeSnippet" style="font-size:11px;word-break:break-all;display:block;background:#1e293b;padding:8px;border-radius:6px">// 1. Get valid monthId first<br>const monthId = sqlMonths[S.selectedMonth]?.id || 9; // Sept = 9<br>fetch(`http://localhost:5000/api/pnl?business_id=1&month_id=${monthId}`)<br>&nbsp;&nbsp;.then(r=>{ if(!r.ok) throw new Error(r.statusText); return r.json() })<br>&nbsp;&nbsp;.then(d=> console.log(d.pnl.gross_profit)) // 8500 from backend/calculations.py<br>&nbsp;&nbsp;.catch(err=> console.error("SQL not running on :5000?", err))</code>
+          <button id="runSqlSnippet" class="btn btn-primary" style="margin-top:8px;padding:6px 12px;font-size:12px" data-tooltip="Run SQL query live against Flask API and show results" aria-label="Run query">▶ Run this query live</button>
+          <button id="copySnippet" class="btn btn-ghost" style="margin-top:8px;padding:6px 12px;font-size:12px;background:#1e293b;color:white;border-color:#334155" data-tooltip="Copy SQL code snippet to clipboard" aria-label="Copy code">⎘ Copy code</button>
+          <div id="snippetResult" style="margin-top:8px;font-size:11px;background:#1e293b;padding:8px;border-radius:6px;display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/app.js?v=removeBiz1"></script>
+</body>
+</html>

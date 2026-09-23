@@ -1,0 +1,120 @@
+:root{--bg:#f8fafc;--card:#ffffff;--border:#e2e8f0;--primary:#4f46e5;--primary2:#7c3aed;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;--text:#0f172a;--muted:#64748b;--radius:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-feature-settings:'cv02','cv03','cv04','cv11'}
+body{background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-family:'Inter',system-ui,sans-serif;font-weight:400;letter-spacing:-0.011em;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.sidebar{width:260px;background:#0f172a;color:#e2e8f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:20;transition:.3s;overflow-y:auto}
+.sidebar.collapsed{transform:translateX(-100%)}
+.brand{padding:24px 20px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #1e293b}
+.brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;font-weight:800}
+.brand h2{font-size:15px;font-weight:800;letter-spacing:-0.02em}
+.brand p{font-size:11px;color:#94a3b8;font-weight:500;letter-spacing:0.04em;text-transform:uppercase}
+.nav{padding:12px}
+.nav a{display:flex;gap:12px;padding:11px 12px;border-radius:10px;color:#94a3b8;font-size:14px;cursor:pointer;align-items:center;margin-bottom:4px}
+.nav a.active,.nav a:hover{background:#1e293b;color:white}
+.nav a span.icon{width:20px;text-align:center}
+.main{flex:1;margin-left:260px;min-width:0}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:12px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:10}
+.topbar .search{flex:1;min-width:180px}
+.topbar input, .topbar select{padding:10px 12px;border:1px solid var(--border);border-radius:10px;width:100%}
+.btn{padding:10px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:600;font-size:13px}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:white}
+.btn-ghost{background:white;border:1px solid var(--border)}
+.btn-success{background:var(--success);color:white}
+.btn-danger{background:var(--danger);color:white}
+.content{padding:20px;max-width:1400px;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.kpi h3{font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;font-weight:600}
+.kpi .value{font-size:26px;font-weight:800;margin:6px 0;letter-spacing:-0.03em;font-feature-settings:'tnum'}
+.kpi .sub{font-size:12px;color:var(--muted);font-weight:500}
+.kpi.profit{border-left:4px solid var(--success)}
+.kpi.loss{border-left:4px solid var(--danger)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.chart-wrap{height:280px}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th,.table td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left}
+.table th{background:#f8fafc;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.badge{padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.badge-profit{background:#dcfce7;color:#166534}
+.badge-loss{background:#fee2e2;color:#991b1b}
+.form{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:12px 0}
+.form input,.form select{padding:10px 12px;border:1px solid var(--border);border-radius:10px}
+.form label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.pl-section{padding:14px 0;border-bottom:1px solid var(--border)}
+.pl-total{font-weight:800;background:#f8fafc}
+.health{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.health-item{padding:12px;border:1px solid var(--border);border-radius:12px}
+.health-item .label{font-size:12px;color:var(--muted)}
+.health-item .val{font-size:18px;font-weight:800}
+.progress{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress div{height:100%;background:linear-gradient(90deg,var(--primary),var(--success))}
+.slider{width:100%}
+.mobile-toggle{display:none}
+
+/* ===== SaaS Tooltip System — Reusable ===== */
+.tooltip-root{
+  position:fixed;z-index:9999;pointer-events:none;opacity:0;transform:translateY(4px) scale(0.98);
+  transition:opacity .16s ease, transform .16s ease;max-width:320px;min-width:160px;
+  background:#0f172a;color:#f1f5f9;padding:10px 12px;border-radius:12px;
+  font-size:12px;line-height:1.5;letter-spacing:-0.01em;
+  box-shadow:0 10px 30px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.12);
+  border:1px solid rgba(255,255,255,.08);white-space:normal;word-break:break-word;
+}
+.tooltip-root.visible{opacity:1;transform:translateY(0) scale(1);}
+.tooltip-root.light{background:#ffffff;color:#0f172a;border-color:#e2e8f0;box-shadow:0 10px 30px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.08);}
+.tooltip-root .tt-title{font-weight:800;font-size:12px;margin-bottom:4px;letter-spacing:-0.02em;}
+.tooltip-root .tt-sub{color:#94a3b8;font-size:11px;}
+.tooltip-root.light .tt-sub{color:#64748b;}
+.tooltip-root .tt-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+.tooltip-root.light .tt-row{border-color:#f1f5f9;}
+.tooltip-root .tt-row:last-child{border:0;}
+.tooltip-root::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:-6px;width:10px;height:10px;background:inherit;border-right:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);transform:translateX(-50%) rotate(45deg);}
+.tooltip-root.light::after{border-color:#e2e8f0;}
+.tooltip-root.place-top::after{bottom:-6px;top:auto;}
+.tooltip-root.place-bottom::after{top:-6px;bottom:auto;transform:translateX(-50%) rotate(225deg);}
+.info-icon{
+  display:inline-grid;place-items:center;width:16px;height:16px;border-radius:999px;
+  background:#e2e8f0;color:#475569;font-size:10px;font-weight:800;line-height:1;
+  cursor:help;vertical-align:middle;margin-left:6px;user-select:none;
+  border:1px solid #cbd5e1;transition:.15s;
+}
+.info-icon:hover,.info-icon:focus-visible{background:#4f46e5;color:white;border-color:#4f46e5;outline:none;box-shadow:0 0 0 3px rgba(79,70,229,.2);}
+.info-icon:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}
+[data-tooltip], [data-tooltip-html]{cursor:help;}
+.btn[data-tooltip], .nav a[data-tooltip]{cursor:pointer;}
+/* KPI hover affordance */
+.kpi{position:relative;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
+.kpi:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.06);border-color:#e2e8f0;}
+.kpi:focus-within{outline:2px solid #4f46e5;outline-offset:2px;border-radius:16px;}
+/* Table row hover */
+.table tbody tr{transition:background .12s ease;}
+.table tbody tr:hover{background:#f8fafc;}
+.table tbody tr:focus-within{background:#eef2ff;outline:none;}
+/* Button subtle hover */
+.btn{transition:transform .12s ease, box-shadow .12s ease, background .12s ease;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.btn:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}
+/* Chart legend hover highlight handled via JS opacity */
+.chart-legend-highlight{opacity:.3 !important;}
+/* Health score bar tooltip anchor */
+.health-score-wrap{position:relative;}
+/* Mobile: show tooltip on tap via .tooltip-pinned */
+.tooltip-root.pinned{pointer-events:auto;}
+/* Sidebar collapsed tooltip: ensure nav icons still show */
+.sidebar.collapsed .nav a[data-tooltip]{position:relative;}
+@media(max-width:900px){
+  .tooltip-root{max-width:88vw;}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2,.grid3,.health{grid-template-columns:1fr}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .mobile-toggle{display:inline-flex}
+}
