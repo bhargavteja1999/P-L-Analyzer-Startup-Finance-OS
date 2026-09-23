@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "pnl-analyzer/backend/app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "pnl-analyzer/backend/app.py"
+    }
+  ]
+}
