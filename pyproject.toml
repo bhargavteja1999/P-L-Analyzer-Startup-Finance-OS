@@ -2,7 +2,7 @@
 name = "pnl-analyzer"
 version = "1.0.0"
 description = "P&L Analyzer — Startup Finance OS"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "flask==3.0.0",
     "flask-cors==4.0.0",
