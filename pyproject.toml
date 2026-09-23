@@ -1,0 +1,2 @@
+[tool.vercel]
+entrypoint = "pnl-analyzer.backend.app:app"
