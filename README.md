@@ -100,13 +100,15 @@ Also see: `docs/00_Project_Overview.md` (what it does), `docs/07_Local_Setup_Gui
 
 > **Recent handover changes (2026-09-22):** P&L SaaS now supports `Local`/`SQL`/`MongoDB` (mongomock fallback), Sept revenue `SQL 20000` / `Mongo 30000`, `Load Demo Data` fixed for all modes, Streamlit title `P&L Analyzer | Startup Finance OS v2.0` on `:80`. See `docs/15_Change_Log.md`.
 
+> **⚠️ Handover:** For Vercel deploy see `pyproject.toml:16` `pnl_analyzer.backend.app:app` (underscore, Python >=3.10) and `docs/09_Deployment_Guide.md`. Folder `pnl-analyzer` was renamed to `pnl_analyzer` — update scripts.
+
 ## 🛠️ Quick Start & Execution Guide
 
 ### 1. Installation
 Clone the repository and install the dependencies:
 ```bash
 pip install -r requirements.txt
-pip install -r pnl-analyzer/backend/requirements.txt
+pip install -r pnl_analyzer/backend/requirements.txt
 ```
 
 ### 2. Run Data Pipeline & Populate SQLite Database
@@ -124,9 +126,9 @@ streamlit run app/dashboard.py
 
 ### 3b. Launch P&L SaaS (keeps SQLite, optional MongoDB)
 ```bash
-python pnl-analyzer/backend/app.py          # Flask :5000 (health http://localhost:5000/api/health)
-python -m http.server 8000 --directory pnl-analyzer/frontend  # Frontend http://localhost:8000
-# Data Source dropdown: Local (localStorage) / SQL (pnl.db) / MongoDB (mongomock or MONGO_URI)
+python pnl_analyzer/backend/app.py          # Flask :5000 (health http://localhost:5000/api/health)
+python -m http.server 8000 --directory pnl_analyzer  # Frontend http://localhost:8000 → Dashboard (or pnl_analyzer/frontend/)
+# Data Source dropdown: Local (localStorage) / SQL (pnl.db or /tmp/pnl.db on Vercel) / MongoDB (mongomock or MONGO_URI)
 # Mongo same demo as SQL: Sept 20000→30000 (see docs/04_Data_Model.md)
 ```
 

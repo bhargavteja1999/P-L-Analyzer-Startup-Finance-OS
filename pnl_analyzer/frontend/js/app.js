@@ -408,8 +408,9 @@ if(dsSelect){
       }
     } else {
       statusEl.textContent="Using local browser storage";
+      sqlDashboard=null; fyCache=null;
     }
-    renderAll();
+    renderAll(); loadFy(); loadAudit();
   });
   // initial status
   const s=document.getElementById("dataSourceStatus");
@@ -1168,7 +1169,7 @@ async function renderAll(){
     await loadMongoPnl().catch(()=>{});
     if(mongoMonths.length) fillMonthSel();
   }
-  await renderLists(); await renderDashboard(); await renderPnlTable(); await renderBreakEven(); renderSimulator(); await renderForecast(); setTimeout(renderCharts,50);
+  await renderLists(); await renderDashboard(); renderYearlyReport(); await renderPnlTable(); await renderBreakEven(); renderSimulator(); await renderForecast(); setTimeout(renderCharts,50);
 }
 
 // --- v2 additions: multi-business, GST, CSV import, FY, branded PDF, audit ---
@@ -1210,9 +1211,9 @@ async function loadUsers(){
 document.getElementById("businessSelect")?.addEventListener("change", async e=>{
   CURRENT_BIZ=parseInt(e.target.value);
   localStorage.setItem("current_biz", CURRENT_BIZ);
-  sqlMonths=[]; sqlDashboard=null; sqlPnlCache=null;
+  sqlMonths=[]; sqlDashboard=null; sqlPnlCache=null; fyCache=null;
   await loadSqlMonths(); await loadSqlDashboard(); await loadSqlPnl();
-  renderAll(); loadBusinesses();
+  renderAll(); loadBusinesses(); loadFy(); loadAudit();
 });
 document.getElementById("addBusinessBtn")?.addEventListener("click", async ()=>{
   const name=prompt("New business name:");
@@ -1304,34 +1305,127 @@ document.getElementById("csvFile")?.addEventListener("change", async e=>{
   }catch(err){ alert("Import failed: "+err.message); }
   e.target.value="";
 });
+let fyCache=null;
+function calcMovingAvg(values, window=3){
+  const out=[];
+  for(let i=0;i<values.length;i++){
+    const w=values.slice(Math.max(0,i-window+1), i+1);
+    out.push(Math.round(w.reduce((a,b)=>a+b,0)/w.length*100)/100);
+  }
+  return out;
+}
+function calcAnomalies(values){
+  if(values.length<3) return values.map((v,i)=>({index:i, value:v, z:0, anomaly:false}));
+  const mean=values.reduce((a,b)=>a+b,0)/values.length;
+  const variance=values.reduce((a,b)=>a+(b-mean)**2,0)/values.length;
+  const std=Math.sqrt(variance);
+  return values.map((v,i)=>({index:i, value:v, z: std? Math.round((v-mean)/std*100)/100:0, anomaly: std? Math.abs((v-mean)/std)>2:false}));
+}
+function renderYearlyReport(fyOverride){
+  try{
+    let y=null, fy=null, anomalies=[], ma=[];
+    let modeLabel = DATA_MODE==="sql" ? "SQL" : DATA_MODE==="mongo" ? "MongoDB" : "Local";
+    if(fyOverride){ fyCache=fyOverride; }
+    if(DATA_MODE==="sql" && sqlDashboard){
+      y=sqlDashboard.yearly;
+      if(fyCache) { fy=fyCache.fy; anomalies=fyCache.anomalies; ma=fyCache.moving_avg_revenue; }
+      else if(fyOverride){ fy=fyOverride.fy; anomalies=fyOverride.anomalies||[]; ma=fyOverride.moving_avg_revenue||[]; }
+    } else if(DATA_MODE==="mongo" && mongoDashboard){
+      y=mongoDashboard.yearly;
+      if(fyCache) { fy=fyCache.fy; anomalies=fyCache.anomalies; ma=fyCache.moving_avg_revenue; }
+    } else {
+      const yl=yearly();
+      y={annual_revenue:yl.rev, annual_cogs:yl.cogs, annual_gross_profit:yl.gross, annual_gross_margin:yl.gm, annual_opex:yl.opex, annual_net_profit:yl.net, annual_net_margin:yl.nm};
+      // FY Apr-Mar reorder
+      const pnls=S.months.map(m=>pnl(m));
+      const fyPnls=pnls.slice(3).concat(pnls.slice(0,3));
+      let fyRev=0,fyCogs=0,fyOpex=0;
+      fyPnls.forEach(p=>{fyRev+=p.rev; fyCogs+=p.cogs; fyOpex+=p.opex;});
+      const fyGross=fyRev-fyCogs; const fyGm=fyRev?fyGross/fyRev*100:0; const fyOp=fyGross-fyOpex; const fyNet=fyOp; const fyNm=fyRev?fyNet/fyRev*100:0;
+      fy={annual_revenue:Math.round(fyRev*100)/100, annual_cogs:Math.round(fyCogs*100)/100, annual_gross_profit:Math.round(fyGross*100)/100, annual_opex:Math.round(fyOpex*100)/100, annual_net_profit:Math.round(fyNet*100)/100, annual_gross_margin:Math.round(fyGm*100)/100, annual_net_margin:Math.round(fyNm*100)/100};
+      anomalies=calcAnomalies(pnls.map(p=>p.net));
+      ma=calcMovingAvg(pnls.map(p=>p.rev),3);
+      fyCache={fy, anomalies, moving_avg_revenue:ma};
+    }
+    // fallback if y still null (e.g., sqlDashboard not loaded yet but local fallback)
+    if(!y){
+      const yl=yearly();
+      y={annual_revenue:yl.rev, annual_cogs:yl.cogs, annual_gross_profit:yl.gross, annual_gross_margin:yl.gm, annual_opex:yl.opex, annual_net_profit:yl.net, annual_net_margin:yl.nm};
+    }
+    if(!fy && fyCache) { fy=fyCache.fy; anomalies=fyCache.anomalies||[]; ma=fyCache.moving_avg_revenue||[]; }
+    // badge & label (dashboard FY summary)
+    const badge=document.getElementById("fyBadge");
+    const label=document.getElementById("fyLabel");
+    if(badge && fy) badge.textContent=`FY Apr-Mar Net ${fmt(fy.annual_net_profit)} • ${modeLabel}`;
+    if(label && fy && ma && ma.length) label.textContent=`• FY Apr-Mar Net ${fmt(fy.annual_net_profit)} • MA(3) rev ${fmt(ma[ma.length-1])}`;
+    // anomaly & moving avg
+    const alertEl=document.getElementById("anomalyAlert");
+    if(alertEl){
+      if(anomalies && anomalies.some(a=>a.anomaly)){
+        alertEl.style.display="inline"; alertEl.textContent=`\u26A0 ${anomalies.filter(a=>a.anomaly).length} anomaly months detected`;
+      } else { alertEl.style.display="none"; alertEl.textContent=""; }
+    }
+    const maEl=document.getElementById("maLine");
+    if(maEl && ma) maEl.textContent=`3-mo moving avg revenue: ${ma.map(v=>fmt(v)).join(" \u2192 ")}`;
+    // Yearly Report page: yearlyCards2 -> annual summary (5 KPIs same as dashboard)
+    const y2=document.getElementById("yearlyCards2");
+    if(y2 && y){
+      y2.innerHTML=`
+        <div class="card"><h3 style="font-size:12px;color:#64748b">Annual Revenue</h3><div style="font-size:20px;font-weight:800">${fmt(y.annual_revenue)}</div><div style="font-size:11px;color:#64748b">${modeLabel} • Calendar Jan-Dec 2026</div></div>
+        <div class="card"><h3 style="font-size:12px;color:#64748b">Annual COGS</h3><div style="font-size:20px;font-weight:800">${fmt(y.annual_cogs)}</div><div style="font-size:11px;color:#64748b">${y.annual_revenue? (y.annual_cogs/y.annual_revenue*100).toFixed(1):0}% of revenue</div></div>
+        <div class="card"><h3 style="font-size:12px;color:#64748b">Annual Gross Profit</h3><div style="font-size:20px;font-weight:800;color:#10b981">${fmt(y.annual_gross_profit)} \u00B7 ${Number(y.annual_gross_margin).toFixed(1)}%</div></div>
+        <div class="card"><h3 style="font-size:12px;color:#64748b">Annual OPEX</h3><div style="font-size:20px;font-weight:800">${fmt(y.annual_opex)}</div></div>
+        <div class="card" style="border:2px solid ${y.annual_net_profit>=0?'#10b981':'#ef4444'}"><h3 style="font-size:12px;color:#64748b">Annual Net ${y.annual_net_profit>=0?'Profit':'Loss'}</h3><div style="font-size:20px;font-weight:800;color:${y.annual_net_profit>=0?'#10b981':'#ef4444'}">${fmt(y.annual_net_profit)} \u00B7 ${Number(y.annual_net_margin).toFixed(1)}%</div></div>
+      `;
+    }
+    // FY card
+    const fyEl=document.getElementById("fyCards");
+    if(fyEl && fy){
+      const an=anomalies? anomalies.filter(a=>a.anomaly):[];
+      fyEl.innerHTML=`<div class="card" style="background:#fefce8;border-color:#fde68a"><h3 style="font-size:11px;color:#92400e">FY Apr-Mar (India) \u2022 ${modeLabel} \u2022 GST ${GST_ON?"18% ON":"off"}</h3><div style="font-size:14px;font-weight:700">Revenue ${fmt(fy.annual_revenue)} \u2192 Net ${fmt(fy.annual_net_profit)} (${Number(fy.annual_net_margin).toFixed(1)}%)</div><div style="font-size:11px;color:#64748b">Gross ${fmt(fy.annual_gross_profit)} (${Number(fy.annual_gross_margin).toFixed(1)}%) \u2022 OPEX ${fmt(fy.annual_opex)} \u2022 Anomalies: ${an.length? an.map(a=>`M${a.index+1} z=${a.z}`).join(", ") : "none"}</div><div style="font-size:11px;color:#64748b;margin-top:4px">FY = Apr 2026-Mar 2026 reordered; Calendar = Jan-Dec</div></div>`;
+    }
+    // also add monthly breakdown table into Yearly Report if container exists
+    let breakdown=document.getElementById("yearlyBreakdown");
+    if(!breakdown && y2){
+      breakdown=document.createElement("div");
+      breakdown.id="yearlyBreakdown";
+      breakdown.style.marginTop="12px";
+      y2.parentElement.appendChild(breakdown);
+    }
+    if(breakdown){
+      let rows=[];
+      if(DATA_MODE==="sql" && sqlDashboard) rows=sqlDashboard.monthly;
+      else if(DATA_MODE==="mongo" && mongoDashboard) rows=mongoDashboard.monthly;
+      else rows=S.months.map(m=>{const p=pnl(m); return {month:m.name, total_revenue:p.rev, total_cogs:p.cogs, total_opex:p.opex, net_profit:p.net, gross_margin:p.gm, net_margin:p.nm}});
+      breakdown.innerHTML=`<div style="overflow:auto"><table class="table" style="margin-top:8px;font-size:12px"><thead><tr><th>Month</th><th style="text-align:right">Revenue</th><th style="text-align:right">COGS</th><th style="text-align:right">OPEX</th><th style="text-align:right">Net</th><th style="text-align:right">Margin</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.month}</td><td style="text-align:right">${fmt(r.total_revenue)}</td><td style="text-align:right">${fmt(r.total_cogs)}</td><td style="text-align:right">${fmt(r.total_opex)}</td><td style="text-align:right;color:${r.net_profit>=0?'#10b981':'#ef4444'};font-weight:700">${fmt(r.net_profit)}</td><td style="text-align:right">${Number(r.net_margin||0).toFixed(1)}%</td></tr>`).join("")}</tbody><tfoot><tr class="pl-total"><td>ANNUAL</td><td style="text-align:right">${fmt(y.annual_revenue)}</td><td style="text-align:right">${fmt(y.annual_cogs)}</td><td style="text-align:right">${fmt(y.annual_opex)}</td><td style="text-align:right">${fmt(y.annual_net_profit)}</td><td style="text-align:right">${Number(y.annual_net_margin).toFixed(1)}%</td></tr></tfoot></table></div><div style="font-size:11px;color:#64748b;margin-top:6px">* ${modeLabel} mode \u2022 Calculated via ${DATA_MODE==="local"?"browser (yearly())": "backend/calculations.py"} \u2022 FY Apr-Mar reorders calendar for India fiscal year</div>`;
+    }
+  }catch(e){ console.error("renderYearlyReport",e); }
+}
 async function loadFy(){
   try{
     const fy=await apiGet(`/api/fy/${CURRENT_BIZ}`);
-    const el=document.getElementById("fyCards");
-    const badge=document.getElementById("fyBadge");
-    const label=document.getElementById("fyLabel");
-    if(badge) badge.textContent=`FY ${fy.fy.annual_revenue? "Apr-Mar" : ""} Net ${fmt(fy.fy.annual_net_profit)}`;
-    if(label) label.textContent=`• FY Apr-Mar Net ${fmt(fy.fy.annual_net_profit)} • MA(3) rev ${fmt(fy.moving_avg_revenue[fy.moving_avg_revenue.length-1])}`;
-    if(el){
-      const an=fy.anomalies.filter(a=>a.anomaly);
-      el.innerHTML=`<div class="card" style="background:#fefce8;border-color:#fde68a"><h3 style="font-size:11px;color:#92400e">FY Apr-Mar (India) • GST aware</h3><div style="font-size:14px;font-weight:700">Revenue ${fmt(fy.fy.annual_revenue)} → Net ${fmt(fy.fy.annual_net_profit)} (${fy.fy.annual_net_margin.toFixed(1)}%) ${GST_ON?"incl. 18% GST":""}</div><div style="font-size:11px;color:#64748b">Anomalies: ${an.length? an.map(a=>`M${a.index+1} z=${a.z}`).join(", ") : "none"}</div></div>`;
-    }
-    const alertEl=document.getElementById("anomalyAlert");
-    if(alertEl && fy.anomalies.some(a=>a.anomaly)){
-      alertEl.style.display="inline"; alertEl.textContent=`⚠ ${fy.anomalies.filter(a=>a.anomaly).length} anomaly months detected`;
-    }
-    const maEl=document.getElementById("maLine");
-    if(maEl) maEl.textContent=`3-mo moving avg revenue: ${fy.moving_avg_revenue.map(v=>fmt(v)).join(" → ")}`;
-    const fy2=document.getElementById("fyCards");
-    if(document.getElementById("yearlyCards2") && fy){
-      document.getElementById("yearlyCards2").innerHTML+=`<div class="card" style="background:#f0fdf4"><h3 style="font-size:11px;color:#166534">FY Apr-Mar (SQL)</h3><div style="font-weight:800">${fmt(fy.fy.annual_revenue)} → ${fmt(fy.fy.annual_net_profit)}</div></div>`;
-    }
-  }catch(e){ console.error("fy",e); }
+    fyCache=fy;
+    renderYearlyReport(fy);
+  }catch(e){
+    console.warn("fy API failed, falling back to local calc",e);
+    renderYearlyReport(null);
+  }
 }
 document.getElementById("exportFyCsv")?.addEventListener("click", async ()=>{
-  const fy=await apiGet(`/api/fy/${CURRENT_BIZ}`);
-  let csv="FY Apr-Mar,Revenue,Net Profit\n"; csv+=`FY Total,${fy.fy.annual_revenue},${fy.fy.annual_net_profit}\n`;
-  const blob=new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="FY_Report.csv"; a.click();
+  try{
+    const fy=await apiGet(`/api/fy/${CURRENT_BIZ}`);
+    let csv="FY Apr-Mar,Revenue,Net Profit\n"; csv+=`FY Total,${fy.fy.annual_revenue},${fy.fy.annual_net_profit}\n`;
+    const blob=new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="FY_Report.csv"; a.click();
+  }catch(e){
+    // Local fallback
+    const pnls=S.months.map(m=>pnl(m));
+    const fyPnls=pnls.slice(3).concat(pnls.slice(0,3));
+    let fyRev=0,fyCogs=0,fyOpex=0;
+    fyPnls.forEach(p=>{fyRev+=p.rev; fyCogs+=p.cogs; fyOpex+=p.opex;});
+    const fyNet=fyRev-fyCogs-fyOpex;
+    let csv="FY Apr-Mar,Revenue,Net Profit (Local)\n"; csv+=`FY Total,${fyRev},${fyNet}\n`;
+    const blob=new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="FY_Report_Local.csv"; a.click();
+  }
 });
 // patch api helpers to use CURRENT_BIZ (now handles mongo too via main curMonthId)
 const _origCurMonthId = curMonthId;
@@ -1344,8 +1438,14 @@ async function loadAudit(){
   try{
     const logs=await apiGet(`/api/audit?business_id=${CURRENT_BIZ}`);
     const el=document.getElementById("auditLog");
-    if(el && logs.length) el.innerHTML=`<h4 style="font-size:11px;color:#64748b">Audit (last 5)</h4>`+logs.slice(0,5).map(l=>`<div style="padding:4px 0;border-bottom:1px solid #e2e8f0">${l.action} — ${l.details||""} <span style="color:#94a3b8">${l.created_at}</span></div>`).join("");
-  }catch(e){}
+    if(el){
+      if(logs.length) el.innerHTML=`<h4 style="font-size:11px;color:#64748b">Audit (last 5) • ${DATA_MODE}</h4>`+logs.slice(0,5).map(l=>`<div style="padding:4px 0;border-bottom:1px solid #e2e8f0">${l.action} — ${l.details||""} <span style="color:#94a3b8">${l.created_at}</span></div>`).join("");
+      else el.innerHTML=`<h4 style="font-size:11px;color:#64748b">Audit (last 5)</h4><div style="color:#94a3b8;padding:8px 0">No audit entries yet — logs appear after creates/deletes via API.</div>`;
+    }
+  }catch(e){
+    const el=document.getElementById("auditLog");
+    if(el) el.innerHTML=`<h4 style="font-size:11px;color:#64748b">Audit (Local mode)</h4><div style="color:#94a3b8;padding:8px 0">Audit requires Flask :5000 SQL connection. Switch to SQL mode or start backend.</div>`;
+  }
 }
 
 // init v2
