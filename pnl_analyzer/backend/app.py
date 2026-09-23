@@ -6,7 +6,7 @@ from pathlib import Path as _Path
 # Ensure backend dir is on sys.path so `from calculations import *` works
 # both when run as `python app.py` and when Vercel loads `pnl_analyzer.backend.app:app` or `backend.app:app`
 sys.path.insert(0, str(_Path(__file__).parent))
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 try:
     from calculations import *
@@ -40,6 +40,16 @@ except ImportError:
 
 app = Flask(__name__)
 CORS(app)
+_FRONTEND_DIR = _Path(__file__).parent.parent  # pnl_analyzer/
+@app.route("/")
+def _root():
+    try:
+        if (_FRONTEND_DIR / "index.html").exists():
+            return send_from_directory(str(_FRONTEND_DIR), "index.html")
+    except Exception:
+        pass
+    return jsonify({"status":"ok","message":"P&L Analyzer API","frontend":"/index.html","health":"/api/health"})
+
 # init DB resiliently — on Vercel read-only FS, fallback to /tmp (see models.py DB_PATH)
 try:
     init_db()
@@ -501,6 +511,23 @@ def mongo_del_expenses(id):
     try: db.expenses.delete_one({"_id": oid})
     except: db.expenses.delete_one({"_id": id})
     return jsonify({"ok":True})
+
+# Fallback for frontend routes when Vercel rewrites all to Flask (prevents 404 on /)
+@app.route("/<path:path>")
+def _frontend_fallback(path):
+    # API paths should return JSON 404, not frontend
+    if path.startswith("api/"):
+        return jsonify({"error":"Not found","path":f"/{path}"}), 404
+    try:
+        full = _FRONTEND_DIR / path
+        if full.is_file():
+            return send_from_directory(str(_FRONTEND_DIR), path)
+        # SPA fallback: serve index.html if exists
+        if (_FRONTEND_DIR / "index.html").exists():
+            return send_from_directory(str(_FRONTEND_DIR), "index.html")
+    except Exception:
+        pass
+    return jsonify({"error":"Not found","path":f"/{path}"}), 404
 
 if __name__=="__main__":
     import os as _os
